@@ -21,11 +21,12 @@ if TYPE_CHECKING:
 class CodeRetriever:
     def __init__(
         self,
-        project_root: str | None = None,
-        ingestor: QueryProtocol | None = None,
+        project_root: str,
+        ingestor: QueryProtocol,
         path_resolver: ProjectPathResolver | None = None,
     ):
         self.ingestor = ingestor
+        self.project_root = Path(project_root).resolve()
 
         if path_resolver:
             self.path_resolver = path_resolver
@@ -80,7 +81,14 @@ class CodeRetriever:
                     error_message=te.CODE_MISSING_LOCATION,
                 )
 
-            project_root = self.path_resolver.resolve_path_from_fqn(qualified_name)
+            try:
+                project_root = self.path_resolver.resolve_path_from_fqn(qualified_name)
+            except KeyError:
+                logger.debug(
+                    f"[CodeRetriever] Project not found in resolver for {qualified_name}, using default project_root"
+                )
+                project_root = self.project_root
+
             full_path = project_root / file_path_str
 
             logger.debug(
