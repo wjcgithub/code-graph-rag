@@ -957,11 +957,6 @@ def _validate_provider_config(role: cs.ModelRole, config: ModelConfig) -> None:
 
 
 def _initialize_path_resolver() -> ProjectPathResolver:
-    """From the configuration initialization project path parser
-
-    Returns:
-        ProjectPathResolver
-    """
     mappings = settings.get_project_mappings()
     resolver = ProjectPathResolver(mappings)
 
@@ -994,9 +989,7 @@ def _initialize_services_and_agent(
     file_writer = FileWriter(project_root=repo_path)
     file_editor = FileEditor(project_root=repo_path, path_resolver=path_resolver)
     shell_commander = ShellCommander(
-        project_root=repo_path,
-        timeout=settings.SHELL_COMMAND_TIMEOUT,
-        path_resolver=path_resolver,
+        project_root=repo_path, timeout=settings.SHELL_COMMAND_TIMEOUT
     )
     directory_lister = DirectoryLister(project_root=repo_path)
     document_analyzer = DocumentAnalyzer(project_root=repo_path)

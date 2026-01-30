@@ -25,16 +25,8 @@ class CodeRetriever:
         ingestor: QueryProtocol | None = None,
         path_resolver: ProjectPathResolver | None = None,
     ):
-        """Initialize CodeRetriever
-
-        Args:
-            project_root: Project root path (backward compatibility parameter)
-            ingestor: Query service instance
-            path_resolver: Project path resolver (preferred)
-        """
         self.ingestor = ingestor
 
-        # Prefer path_resolver, otherwise create single-project resolver
         if path_resolver:
             self.path_resolver = path_resolver
             logger.info(
@@ -43,7 +35,6 @@ class CodeRetriever:
                 )
             )
         else:
-            # Backward compatibility: create single-project resolver
             from ..project_path_resolver import ProjectPathResolver
 
             default_root = project_root or "."
@@ -55,19 +46,12 @@ class CodeRetriever:
             )
 
     async def find_code_snippet(self, qualified_name: str) -> CodeSnippet:
-        """Find and extract code snippet
-
-        Args:
-            qualified_name: Fully qualified name of the function
-
-        Returns:
-            CodeSnippet object containing code snippet and metadata
-        """
         logger.info(ls.CODE_RETRIEVER_SEARCH.format(name=qualified_name))
 
         params = {"qn": qualified_name}
         try:
-            results = self.ingestor.fetch_all(CYPHER_FIND_BY_QUALIFIED_NAME, params)
+            if self.ingestor is not None:
+                results = self.ingestor.fetch_all(CYPHER_FIND_BY_QUALIFIED_NAME, params)
 
             if not results:
                 return CodeSnippet(
@@ -96,7 +80,6 @@ class CodeRetriever:
                     error_message=te.CODE_MISSING_LOCATION,
                 )
 
-            # Key modification: use path_resolver to dynamically resolve project path
             project_root = self.path_resolver.resolve_path_from_fqn(qualified_name)
             full_path = project_root / file_path_str
 
@@ -119,7 +102,6 @@ class CodeRetriever:
                 docstring=res.get("docstring"),
             )
         except KeyError as e:
-            # Project path not found
             error_msg = te.CODE_PROJECT_NOT_FOUND.format(
                 fqn=qualified_name, error=str(e)
             )

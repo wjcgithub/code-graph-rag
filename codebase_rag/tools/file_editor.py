@@ -29,18 +29,11 @@ class FileEditor:
         project_root: str = ".",
         path_resolver: ProjectPathResolver | None = None,
     ) -> None:
-        """Initialize FileEditor
-
-        Args:
-            project_root: Project root path (backward compatibility parameter)
-            path_resolver: Project path resolver (optional)
-        """
         if path_resolver:
             self.path_resolver = path_resolver
-            self.project_root = path_resolver.list_projects()[0]  # Use first project
+            self.project_root = path_resolver.list_projects()[0]
         else:
             self.project_root = Path(project_root).resolve()
-            # Create single-project resolver for compatibility
             from ..project_path_resolver import ProjectPathResolver
 
             self.path_resolver = ProjectPathResolver(
@@ -231,7 +224,7 @@ class FileEditor:
     ) -> bool:
         logger.info(ls.TOOL_FILE_EDIT_SURGICAL.format(path=file_path))
         try:
-            full_path = (self.project_root / file_path).resolve()
+            full_path = (Path(self.project_root) / file_path).resolve()
             full_path.relative_to(self.project_root)
 
             if not full_path.is_file():

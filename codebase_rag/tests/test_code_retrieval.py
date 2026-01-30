@@ -13,14 +13,14 @@ class TestCodeRetrieverInit:
     def test_init_resolves_project_root(self) -> None:
         mock_ingestor = MagicMock()
 
-        retriever = CodeRetriever("/tmp/project", mock_ingestor)
+        retriever = CodeRetriever("/tmp/project", mock_ingestor, path_resolver=None)
 
         assert retriever.project_root == Path("/tmp/project").resolve()
 
     def test_init_stores_ingestor(self) -> None:
         mock_ingestor = MagicMock()
 
-        retriever = CodeRetriever("/tmp/project", mock_ingestor)
+        retriever = CodeRetriever("/tmp/project", mock_ingestor, path_resolver=None)
 
         assert retriever.ingestor is mock_ingestor
 
@@ -32,7 +32,7 @@ class TestFindCodeSnippet:
 
     @pytest.fixture
     def retriever(self, mock_ingestor: MagicMock) -> CodeRetriever:
-        return CodeRetriever("/tmp/project", mock_ingestor)
+        return CodeRetriever("/tmp/project", mock_ingestor, path_resolver=None)
 
     @pytest.mark.asyncio
     async def test_returns_not_found_when_no_results(
